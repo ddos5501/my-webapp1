@@ -1,0 +1,2577 @@
+<!DOCTYPE html>
+<html lang="ko"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwOTUyODQwNTA0OTkwMTYwOTA5OCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjX2Y4ZWMzZWM1YWUwNWY1NWRfZWNiMTNmN2Ffc3RhY2tpbmdfYmxvY2tzXzNkLmh0bWwtODQifSwiZXhwIjoxNzkzMjgxOTQ4LCJpYXQiOjE3OTMyNzgzNDgsImFsZyI6IlJTMjU2In0.bBaGhwFCxj5rcM72CL9NlZh0G8wZJJTkO4J0jdwI1ZhwccH_cHTkLYteMT4w13IPGUu-UhShEZjuChXQN1Bp6VeZFd9cZ9tJzMYKz21uAMr4Xnx8uv48kU9whPh5wc7dMLICKNAF7kj-TqRiQSzR8k02hmI0r0qKMve8MRo9kjKrxsfeYo-uddzAYFyT7cMdmlzw0btdJu6WbPnEQ5NPMSUO_Ot5OZVY66XF5hsm13RDO3dJi7CZuxbh_2KmA898knd_nBz9AsoMPC8VOEXmd9sEe0QRaxoWQXnmJcl391x5uTHBcaiJtq0Ucae9ponFXmG67mE8WfLS1NpziKAKHA","c_f8ec3ec5ae05f55d_ecb13f7a_stacking_blocks_3d.html-84")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>6학년 수학 입체 쌓기나무 3D 실험실 (3×3)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Noto+Sans+KR:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --toss-bg: #F2F4F6;
+      --toss-card: #FFFFFF;
+      --toss-sub: #F9FAFB;
+      --toss-border: #E5E8EB;
+      --toss-blue: #3182F6;
+      --toss-blue-light: #E8F3FF;
+      --toss-blue-dark: #1B64DA;
+      --toss-red: #F04452;
+      --toss-red-light: #FFEEEE;
+      --toss-text-1: #191F28;
+      --toss-text-2: #4E5968;
+      --toss-text-3: #8B95A1;
+    }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    html, body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--toss-bg);
+      color: var(--toss-text-1);
+      -webkit-font-smoothing: antialiased;
+    }
+    #canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      touch-action: none;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 42%, #FFFFFF 0%, #F4F6F8 62%, #E5E8EB 100%);
+    }
+    #canvas-container canvas {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      outline: none;
+    }
+    .toss-card {
+      background: #FFFFFF;
+      border-radius: 24px;
+      border: 1px solid #E5E8EB;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+    }
+    .toss-floating {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(229, 232, 235, 0.9);
+      box-shadow: 0 8px 28px rgba(25, 31, 40, 0.07);
+    }
+    .grid-cell-btn {
+      transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .grid-cell-btn:hover {
+      transform: translateY(-1px);
+    }
+    .grid-cell-btn:active {
+      transform: scale(0.92);
+    }
+    .cam-btn {
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #4E5968;
+      background: transparent;
+    }
+    .cam-btn:hover {
+      background: #F2F4F6;
+      color: #191F28;
+    }
+    .cam-btn.active {
+      background: #3182F6 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 12px rgba(49, 130, 246, 0.32);
+    }
+    .tool-btn {
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #4E5968;
+      background: transparent;
+    }
+    .tool-btn:hover {
+      background: #E5E8EB;
+      color: #191F28;
+    }
+    .tool-btn.active {
+      background: #FFFFFF !important;
+      color: #3182F6 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3px;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D6DB;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B0B8C1;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-20{bottom:5rem}.bottom-3\.5{bottom:0.875rem}.left-1\/2{left:50%}.left-3\.5{left:0.875rem}.right-3\.5{right:0.875rem}.top-16{top:4rem}.top-3\.5{top:0.875rem}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.mb-0\.5{margin-bottom:0.125rem}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.aspect-square{aspect-ratio:1 / 1}.h-2{height:0.5rem}.h-6{height:1.5rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-9{height:2.25rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.min-h-0{min-height:0px}.min-h-\[480px\]{min-height:480px}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-9{width:2.25rem}.w-full{width:100%}.min-w-0{min-width:0px}.max-w-\[184px\]{max-width:184px}.max-w-\[270px\]{max-width:270px}.max-w-\[68px\]{max-width:68px}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-\[-8px\]{--tw-translate-y:-8px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.cursor-not-allowed{cursor:not-allowed}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-3\.5{gap:0.875rem}.gap-\[2px\]{gap:2px}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-\[28px\]{border-radius:28px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-\[1\.5px\]{border-radius:1.5px}.rounded-\[3px\]{border-radius:3px}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-t{border-top-width:1px}.border-\[\#E5E8EB\]{--tw-border-opacity:1;border-color:rgb(229 232 235 / var(--tw-border-opacity, 1))}.border-\[\#3182F6\]{--tw-border-opacity:1;border-color:rgb(49 130 246 / var(--tw-border-opacity, 1))}.bg-\[\#F2F4F6\]{--tw-bg-opacity:1;background-color:rgb(242 244 246 / var(--tw-bg-opacity, 1))}.bg-\[\#191F28\]{--tw-bg-opacity:1;background-color:rgb(25 31 40 / var(--tw-bg-opacity, 1))}.bg-\[\#191F28\]\/40{background-color:rgb(25 31 40 / 0.4)}.bg-\[\#191F28\]\/95{background-color:rgb(25 31 40 / 0.95)}.bg-\[\#3182F6\]{--tw-bg-opacity:1;background-color:rgb(49 130 246 / var(--tw-bg-opacity, 1))}.bg-\[\#E5E8EB\]\/60{background-color:rgb(229 232 235 / 0.6)}.bg-\[\#E5E8EB\]\/70{background-color:rgb(229 232 235 / 0.7)}.bg-\[\#E8F3FF\]{--tw-bg-opacity:1;background-color:rgb(232 243 255 / var(--tw-bg-opacity, 1))}.bg-\[\#F04452\]{--tw-bg-opacity:1;background-color:rgb(240 68 82 / var(--tw-bg-opacity, 1))}.bg-\[\#F9FAFB\]{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-\[\#FFEEEE\]{--tw-bg-opacity:1;background-color:rgb(255 238 238 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.bg-\[\#00C471\]{--tw-bg-opacity:1;background-color:rgb(0 196 113 / var(--tw-bg-opacity, 1))}.bg-\[\#E8F3FF\]\/55{background-color:rgb(232 243 255 / 0.55)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pl-1{padding-left:0.25rem}.pl-2{padding-left:0.5rem}.pr-0\.5{padding-right:0.125rem}.pt-1{padding-top:0.25rem}.pt-2\.5{padding-top:0.625rem}.text-center{text-align:center}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[15px\]{font-size:15px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-base{font-size:1rem;line-height:1.5rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.text-\[\#191F28\]{--tw-text-opacity:1;color:rgb(25 31 40 / var(--tw-text-opacity, 1))}.text-\[\#00A859\]{--tw-text-opacity:1;color:rgb(0 168 89 / var(--tw-text-opacity, 1))}.text-\[\#3182F6\]{--tw-text-opacity:1;color:rgb(49 130 246 / var(--tw-text-opacity, 1))}.text-\[\#4E5968\]{--tw-text-opacity:1;color:rgb(78 89 104 / var(--tw-text-opacity, 1))}.text-\[\#6B7684\]{--tw-text-opacity:1;color:rgb(107 118 132 / var(--tw-text-opacity, 1))}.text-\[\#8B95A1\]{--tw-text-opacity:1;color:rgb(139 149 161 / var(--tw-text-opacity, 1))}.text-\[\#D1D6DB\]{--tw-text-opacity:1;color:rgb(209 214 219 / var(--tw-text-opacity, 1))}.text-\[\#F04452\]{--tw-text-opacity:1;color:rgb(240 68 82 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-\[\#B0B8C1\]{--tw-text-opacity:1;color:rgb(176 184 193 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.opacity-75{opacity:0.75}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-\[\#191F28\]{--tw-ring-opacity:1;--tw-ring-color:rgb(25 31 40 / var(--tw-ring-opacity, 1))}.ring-offset-2{--tw-ring-offset-width:2px}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:border-\[\#3182F6\]:hover{--tw-border-opacity:1;border-color:rgb(49 130 246 / var(--tw-border-opacity, 1))}.hover\:border-\[\#D1D6DB\]:hover{--tw-border-opacity:1;border-color:rgb(209 214 219 / var(--tw-border-opacity, 1))}.hover\:bg-\[\#1B64DA\]:hover{--tw-bg-opacity:1;background-color:rgb(27 100 218 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#3182F6\]:hover{--tw-bg-opacity:1;background-color:rgb(49 130 246 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#333D4B\]:hover{--tw-bg-opacity:1;background-color:rgb(51 61 75 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#D0E6FF\]:hover{--tw-bg-opacity:1;background-color:rgb(208 230 255 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#E5E8EB\]:hover{--tw-bg-opacity:1;background-color:rgb(229 232 235 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#E8F3FF\]:hover{--tw-bg-opacity:1;background-color:rgb(232 243 255 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#E8F3FF\]\/60:hover{background-color:rgb(232 243 255 / 0.6)}.hover\:bg-\[\#F2F4F6\]:hover{--tw-bg-opacity:1;background-color:rgb(242 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#FFD6D6\]:hover{--tw-bg-opacity:1;background-color:rgb(255 214 214 / var(--tw-bg-opacity, 1))}.hover\:text-\[\#3182F6\]:hover{--tw-text-opacity:1;color:rgb(49 130 246 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:opacity-100:hover{opacity:1}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\:opacity-40:disabled{opacity:0.4}.group:hover .group-hover\:underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}@media (min-width: 640px){.sm\:block{display:block}.sm\:inline-block{display:inline-block}.sm\:inline{display:inline}.sm\:gap-2{gap:0.5rem}.sm\:text-\[17px\]{font-size:17px}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:block{display:block}}@media (min-width: 1024px){.lg\:h-screen{height:100vh}.lg\:h-full{height:100%}.lg\:max-h-screen{max-height:100vh}.lg\:min-h-0{min-height:0px}.lg\:w-\[390px\]{width:390px}.lg\:flex-row{flex-direction:row}.lg\:overflow-hidden{overflow:hidden}.lg\:overflow-y-auto{overflow-y:auto}.lg\:p-4{padding:1rem}.lg\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 1280px){.xl\:w-\[410px\]{width:410px}}</style></head>
+<body class="min-h-screen lg:h-screen lg:max-h-screen lg:overflow-hidden flex flex-col bg-[#F2F4F6] text-[#191F28]">
+
+  <!-- Embedded Data Tags: Preserved inside the HTML file when downloaded so presets open on ANY other PC -->
+  <script id="embedded-presets-data" type="application/json">
+[
+  {
+    "id": 1,
+    "name": "프리셋 1 (ㄱ자 기본)",
+    "grid": [
+      [
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308"
+        ]
+      ],
+      [
+        [
+          "#eab308",
+          "#eab308"
+        ],
+        [],
+        []
+      ],
+      [
+        [
+          "#eab308"
+        ],
+        [],
+        []
+      ]
+    ],
+    "updatedAt": 0
+  },
+  {
+    "id": 2,
+    "name": "프리셋 2 (계단 모양)",
+    "grid": [
+      [
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ]
+      ],
+      [
+        [
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308"
+        ]
+      ],
+      [
+        [
+          "#eab308"
+        ],
+        [
+          "#eab308"
+        ],
+        [
+          "#eab308"
+        ]
+      ]
+    ],
+    "updatedAt": 0
+  },
+  {
+    "id": 3,
+    "name": "프리셋 3 (숨은 블록)",
+    "grid": [
+      [
+        [
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308"
+        ]
+      ],
+      [
+        [
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308",
+          "#eab308"
+        ],
+        [
+          "#eab308",
+          "#eab308"
+        ]
+      ],
+      [
+        [],
+        [
+          "#eab308"
+        ],
+        []
+      ]
+    ],
+    "updatedAt": 0
+  },
+  {
+    "id": 4,
+    "name": "프리셋 4 (빈 슬롯)",
+    "grid": null,
+    "updatedAt": 0
+  },
+  {
+    "id": 5,
+    "name": "프리셋 5 (빈 슬롯)",
+    "grid": null,
+    "updatedAt": 0
+  },
+  {
+    "id": 6,
+    "name": "프리셋 6 (빈 슬롯)",
+    "grid": null,
+    "updatedAt": 0
+  }
+]
+</script>
+  <script id="embedded-current-grid" type="application/json">[[["#eab308","#eab308","#eab308"],["#eab308","#eab308"],["#eab308"]],[["#eab308","#eab308"],[],[]],[["#eab308"],[],[]]]</script>
+
+  <!-- Toast Notification Banner -->
+  <div id="toss-toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-[-8px] transition-all duration-200">
+    <div class="bg-[#191F28]/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2">
+      <span id="toss-toast-icon">✅</span>
+      <span id="toss-toast-text">저장되었습니다.</span>
+    </div>
+  </div>
+
+  <!-- Top Navigation & Status Header (Toss Navigation Bar Style) -->
+  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#E5E8EB] px-4 lg:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-2xl bg-[#E8F3FF] flex items-center justify-center text-lg shadow-xs">
+        🧊
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-[15px] sm:text-[17px] font-extrabold tracking-tight text-[#191F28]">6학년 수학 3×3 입체 쌓기나무 실험실</h1>
+          <span class="hidden sm:inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#E8F3FF] text-[#3182F6]">3×3 배열 · 프리셋 내장형</span>
+        </div>
+        <p class="text-[11px] text-[#8B95A1] hidden md:block">마우스 드래그로 360° 회전 · 프리셋 저장 후 <span class="text-[#3182F6] font-bold">파일 다운로드</span>하면 다른 PC에서도 프리셋이 그대로 켜집니다</p>
+      </div>
+    </div>
+
+    <!-- Live Counters & Utility Controls -->
+    <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+      <!-- Toss Summary Pill -->
+      <div class="flex items-center gap-2.5 bg-[#F2F4F6] rounded-2xl px-3.5 py-1.5">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-medium text-[#4E5968]">전체 쌓기나무</span>
+          <span id="total-count-badge" class="text-sm font-extrabold text-[#3182F6]">9개</span>
+        </div>
+        <span class="text-[#D1D6DB]">|</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-medium text-[#4E5968]">최고 층</span>
+          <span id="max-height-badge" class="text-sm font-extrabold text-[#191F28]">3층</span>
+        </div>
+      </div>
+
+      <button id="btn-undo" type="button" class="px-3 py-1.5 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] active:scale-95 text-xs font-bold text-[#4E5968] transition flex items-center gap-1 disabled:opacity-40" title="실행 취소 (Ctrl+Z)" disabled="">
+        <span>↩</span><span class="hidden sm:inline">되돌리기</span>
+      </button>
+
+      <button id="btn-clear" type="button" class="px-3 py-1.5 rounded-xl bg-[#FFEEEE] hover:bg-[#FFD6D6] active:scale-95 text-xs font-bold text-[#F04452] transition flex items-center gap-1" title="모두 지우기">
+        <span>🗑️</span><span class="hidden sm:inline">초기화</span>
+      </button>
+
+      <button id="btn-sound-toggle" type="button" class="px-3 py-1.5 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] active:scale-95 text-xs font-bold text-[#4E5968] transition" title="효과음 켜기/끄기">
+        🔊 효과음
+      </button>
+
+      <button id="btn-download-html" type="button" class="px-3.5 py-1.5 rounded-xl bg-[#3182F6] hover:bg-[#1B64DA] active:scale-95 text-xs font-bold text-white shadow-xs transition flex items-center gap-1" title="현재 저장된 모든 프리셋을 포함하여 다른 PC에서도 그대로 열리는 HTML 파일로 다운로드합니다">
+        <span>💾</span><span>파일 다운로드</span>
+      </button>
+
+      <button id="btn-help-modal" type="button" class="px-3 py-1.5 rounded-xl bg-[#E8F3FF] hover:bg-[#D0E6FF] active:scale-95 text-xs font-bold text-[#3182F6] transition">
+        ❓ 사용법
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Desktop Bento Workspace -->
+  <main class="flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 p-3 lg:p-4 overflow-y-auto lg:overflow-hidden">
+
+    <!-- Left/Center 3D Interactive Studio Card -->
+    <section class="flex-1 min-h-[480px] lg:min-h-0 lg:h-full toss-card flex flex-col relative overflow-hidden">
+
+      <!-- Top Floating Camera Viewpoint Bar -->
+      <div class="absolute top-3.5 left-3.5 right-3.5 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        <!-- Segmented Camera Presets -->
+        <div class="toss-floating rounded-2xl p-1 flex flex-wrap items-center gap-0.5 pointer-events-auto">
+          <span class="text-[11px] font-bold text-[#8B95A1] px-2.5 hidden sm:inline">시점</span>
+          <button type="button" data-cam="iso" class="cam-btn active px-3 py-1.5 rounded-xl text-xs font-bold">
+            🧊 입체(기본)
+          </button>
+          <button type="button" data-cam="front" class="cam-btn px-3 py-1.5 rounded-xl text-xs font-bold">
+            ▲ 앞(정면)
+          </button>
+          <button type="button" data-cam="top" class="cam-btn px-3 py-1.5 rounded-xl text-xs font-bold">
+            ⬇ 위
+          </button>
+          <button type="button" data-cam="right" class="cam-btn px-3 py-1.5 rounded-xl text-xs font-bold">
+            ◀ 오른쪽 옆
+          </button>
+          <button type="button" data-cam="left" class="cam-btn px-3 py-1.5 rounded-xl text-xs font-bold">
+            ▶ 왼쪽 옆
+          </button>
+          <button type="button" data-cam="back" class="cam-btn px-3 py-1.5 rounded-xl text-xs font-bold">
+            ▼ 뒤
+          </button>
+        </div>
+
+        <!-- Projection & Auto-Rotate Toggles -->
+        <div class="toss-floating rounded-2xl p-1 flex items-center gap-1 pointer-events-auto">
+          <button id="btn-proj-mode" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#E8F3FF] text-[#3182F6] hover:bg-[#D0E6FF] transition" title="원근감 있는 VR 입체 시점과 교과서 평면 시점을 전환합니다">
+            🥽 VR 입체원근: 켜짐
+          </button>
+          <button id="btn-autorotate" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold text-[#4E5968] hover:bg-[#F2F4F6] transition">
+            🔄 자동회전
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Three.js Canvas Container -->
+      <div id="canvas-container" class="flex-1 min-h-0 w-full h-full">
+        <!-- Current Viewpoint & Front Guide Pill (Bottom-Left) -->
+        <div class="absolute bottom-20 left-3.5 z-10 pointer-events-none hidden sm:block">
+          <div class="toss-floating rounded-2xl px-3.5 py-2.5 max-w-[270px]">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#3182F6]"></span>
+              <span id="current-view-label" class="text-xs font-extrabold text-[#191F28]">현재 시점: 입체 기본 시점</span>
+            </div>
+            <p class="text-[11px] text-[#4E5968] mt-0.5 leading-snug">
+              3×3 판 아래쪽 <span class="text-[#F04452] font-bold">빨간색 [▲ 앞(정면)]</span> 표지판이 항상 앞쪽 기준입니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- On-Screen Orbit & Zoom Remote (Bottom-Right) -->
+        <div class="absolute bottom-20 right-3.5 z-10 flex flex-col items-center">
+          <div class="toss-floating rounded-2xl p-2 flex flex-col items-center gap-1">
+            <span class="text-[10px] font-bold text-[#8B95A1] mb-0.5">시점 리모컨</span>
+            <button type="button" data-orbit="up" class="w-8 h-7 rounded-xl bg-[#F2F4F6] hover:bg-[#E8F3FF] hover:text-[#3182F6] active:scale-95 text-xs font-bold text-[#4E5968] transition">▲</button>
+            <div class="flex items-center gap-1">
+              <button type="button" data-orbit="left" class="w-8 h-7 rounded-xl bg-[#F2F4F6] hover:bg-[#E8F3FF] hover:text-[#3182F6] active:scale-95 text-xs font-bold text-[#4E5968] transition">◀</button>
+              <button type="button" id="btn-reset-cam" class="w-10 h-7 rounded-xl bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] text-[10px] font-extrabold transition" title="정면 기준 기본 입체 시점">앞기준</button>
+              <button type="button" data-orbit="right" class="w-8 h-7 rounded-xl bg-[#F2F4F6] hover:bg-[#E8F3FF] hover:text-[#3182F6] active:scale-95 text-xs font-bold text-[#4E5968] transition">▶</button>
+            </div>
+            <button type="button" data-orbit="down" class="w-8 h-7 rounded-xl bg-[#F2F4F6] hover:bg-[#E8F3FF] hover:text-[#3182F6] active:scale-95 text-xs font-bold text-[#4E5968] transition">▼</button>
+            <div class="flex items-center gap-1 mt-1 pt-1 border-t border-[#E5E8EB] w-full justify-center">
+              <button type="button" id="btn-zoom-in" class="flex-1 py-1 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] text-xs font-bold text-[#4E5968] transition" title="확대">➕</button>
+              <button type="button" id="btn-zoom-out" class="flex-1 py-1 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] text-xs font-bold text-[#4E5968] transition" title="축소">➖</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Bottom Dock (Toss Segmented Action Bar) -->
+        <div class="absolute bottom-3.5 left-3.5 right-3.5 z-10 flex justify-center pointer-events-none">
+          <div class="toss-floating rounded-2xl px-3.5 py-2 flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
+            <!-- Segmented Click Mode -->
+            <div class="flex items-center bg-[#F2F4F6] p-1 rounded-xl gap-0.5">
+              <button type="button" data-mode="add" class="tool-btn active px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1">
+                <span>➕</span><span>쌓기</span>
+              </button>
+              <button type="button" data-mode="remove" class="tool-btn px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1">
+                <span>➖</span><span>빼기</span>
+              </button>
+              <button type="button" data-mode="paint" class="tool-btn px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1">
+                <span>🎨</span><span>색칠</span>
+              </button>
+            </div>
+
+            <!-- Block Color Swatches -->
+            <div class="flex items-center gap-1.5 pl-1 border-l border-[#E5E8EB]">
+              <button type="button" data-color="#eab308" class="color-swatch w-6 h-6 rounded-full ring-2 ring-offset-2 ring-[#191F28] scale-110 transition" style="background:#FFC800;" title="기본 노란 나무색"></button>
+              <button type="button" data-color="#ef4444" class="color-swatch w-6 h-6 rounded-full opacity-75 hover:opacity-100 transition" style="background:#F04452;" title="빨강"></button>
+              <button type="button" data-color="#3b82f6" class="color-swatch w-6 h-6 rounded-full opacity-75 hover:opacity-100 transition" style="background:#3182F6;" title="파랑"></button>
+              <button type="button" data-color="#10b981" class="color-swatch w-6 h-6 rounded-full opacity-75 hover:opacity-100 transition" style="background:#00C471;" title="초록"></button>
+              <button type="button" data-color="#a855f7" class="color-swatch w-6 h-6 rounded-full opacity-75 hover:opacity-100 transition" style="background:#8B5CF6;" title="보라"></button>
+            </div>
+
+            <!-- Layer X-Ray Filter -->
+            <div class="flex items-center gap-1.5 pl-2 border-l border-[#E5E8EB]">
+              <span class="text-xs font-bold text-[#4E5968]">층별 투시</span>
+              <select id="layer-filter-select" class="bg-[#F2F4F6] hover:bg-[#E5E8EB] text-xs font-extrabold text-[#3182F6] rounded-xl px-2.5 py-1.5 focus:outline-none cursor-pointer transition">
+                <option value="all">전체 층 선명하게 보기</option>
+                <option value="1">1층만 강조 (위층 반투명)</option>
+                <option value="2">2층만 강조</option>
+                <option value="3">3층만 강조</option>
+                <option value="4">4층만 강조</option>
+                <option value="5">5층만 강조</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Control Sidebar (Clean Toss Stacked Cards) -->
+    <aside class="w-full lg:w-[390px] xl:w-[410px] shrink-0 flex flex-col gap-3 lg:h-full lg:overflow-y-auto pr-0.5">
+
+      <!-- Card 1: 3x3 Interactive Floor Plan Grid (위에서 본 모양 + 숫자판) -->
+      <div class="toss-card p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h2 class="text-[15px] font-extrabold text-[#191F28] flex items-center gap-1.5">
+              <span>🔢 3×3 위에서 본 모양 숫자판</span>
+            </h2>
+            <p class="text-[11px] text-[#8B95A1] mt-0.5">칸을 클릭하면 나무가 쌓이고, 우클릭하면 빠집니다.</p>
+          </div>
+          <button id="btn-hide-numbers" type="button" class="px-3 py-1.5 rounded-xl bg-[#E8F3FF] hover:bg-[#D0E6FF] text-[11px] font-extrabold text-[#3182F6] transition shrink-0">
+            👁️ 숫자 보이기
+          </button>
+        </div>
+
+        <!-- Direction Guide Wrapper around 3x3 Grid -->
+        <div class="bg-[#F9FAFB] border border-[#E5E8EB] rounded-2xl p-2.5 flex flex-col items-center">
+          <!-- Back label -->
+          <div class="text-[10px] font-extrabold text-[#6B7684] mb-1.5 px-2.5 py-0.5 rounded-full bg-[#E5E8EB]/70">
+            ▼ 뒤 (BACK)
+          </div>
+
+          <div class="w-full flex items-center justify-center gap-2">
+            <!-- Left label -->
+            <div class="text-[10px] font-extrabold text-[#6B7684] px-1.5 py-2 rounded-xl bg-[#E5E8EB]/60 text-center leading-tight">
+              왼<br>쪽
+            </div>
+
+            <!-- 3x3 Grid Buttons -->
+            <div id="grid-5x5-pad" class="grid grid-cols-3 gap-2 flex-1 max-w-[184px] aspect-square p-2.5 bg-white rounded-2xl border border-[#E5E8EB] shadow-2xs"><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition " title="1행 1열 (3층) - 클릭: 조작 / 우클릭: 빼기" style="background-color: rgb(255, 200, 0); color: rgb(25, 31, 40); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 6px;">3</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition " title="1행 2열 (2층) - 클릭: 조작 / 우클릭: 빼기" style="background-color: rgb(255, 200, 0); color: rgb(25, 31, 40); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 6px;">2</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition " title="1행 3열 (1층) - 클릭: 조작 / 우클릭: 빼기" style="background-color: rgb(255, 200, 0); color: rgb(25, 31, 40); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 6px;">1</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition " title="2행 1열 (2층) - 클릭: 조작 / 우클릭: 빼기" style="background-color: rgb(255, 200, 0); color: rgb(25, 31, 40); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 6px;">2</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#8B95A1]" title="2행 2열 (0층) - 클릭: 조작 / 우클릭: 빼기">0</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#8B95A1]" title="2행 3열 (0층) - 클릭: 조작 / 우클릭: 빼기">0</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition " title="3행 1열 (1층) - 클릭: 조작 / 우클릭: 빼기" style="background-color: rgb(255, 200, 0); color: rgb(25, 31, 40); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 6px;">1</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#8B95A1]" title="3행 2열 (0층) - 클릭: 조작 / 우클릭: 빼기">0</button><button type="button" class="grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#8B95A1]" title="3행 3열 (0층) - 클릭: 조작 / 우클릭: 빼기">0</button></div>
+
+            <!-- Right label -->
+            <div class="text-[10px] font-extrabold text-[#6B7684] px-1.5 py-2 rounded-xl bg-[#E5E8EB]/60 text-center leading-tight">
+              오<br>른<br>쪽
+            </div>
+          </div>
+
+          <!-- Prominent FRONT Indicator -->
+          <div class="mt-2 w-full max-w-[184px] py-1.5 px-3 rounded-xl bg-[#F04452] text-white font-extrabold text-xs text-center shadow-xs flex items-center justify-center gap-1">
+            <span>▲ 앞 (정면 기준) ▲</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Real-time Orthographic Projections (위 / 앞 / 오른쪽 옆에서 본 모양) -->
+      <div class="toss-card p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-[15px] font-extrabold text-[#191F28]">📐 방향별 본 모양 (3×3)</h2>
+          <span class="text-[11px] font-semibold text-[#8B95A1]">클릭 시 해당 시점 이동</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Top View Card -->
+          <button type="button" data-cam="top" class="cam-projection-card group bg-[#F9FAFB] hover:bg-[#E8F3FF]/60 border border-[#E5E8EB] hover:border-[#3182F6] rounded-2xl p-2 flex flex-col items-center transition">
+            <span class="text-[11px] font-extrabold text-[#00A859] mb-1 group-hover:underline">위에서 본 모양</span>
+            <div id="proj-top" class="mini-grid w-full aspect-square max-w-[68px] bg-white p-1.5 rounded-xl border border-[#E5E8EB]"><div class="w-full h-full rounded-[3px] bg-[#00C471]"></div><div class="w-full h-full rounded-[3px] bg-[#00C471]"></div><div class="w-full h-full rounded-[3px] bg-[#00C471]"></div><div class="w-full h-full rounded-[3px] bg-[#00C471]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#00C471]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div></div>
+            <span class="text-[10px] text-[#F04452] font-extrabold mt-1">▲ 앞</span>
+          </button>
+
+          <!-- Front View Card -->
+          <button type="button" data-cam="front" class="cam-projection-card group bg-[#F9FAFB] hover:bg-[#E8F3FF]/60 border border-[#E5E8EB] hover:border-[#3182F6] rounded-2xl p-2 flex flex-col items-center transition">
+            <span class="text-[11px] font-extrabold text-[#F04452] mb-1 group-hover:underline">앞에서 본 모양</span>
+            <div id="proj-front" class="mini-grid w-full aspect-square max-w-[68px] bg-white p-1.5 rounded-xl border border-[#E5E8EB]"><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div><div class="w-full h-full rounded-[3px] bg-[#F04452]"></div></div>
+            <span class="text-[10px] text-[#8B95A1] font-semibold mt-1">왼 ◀ ─ ▶ 오</span>
+          </button>
+
+          <!-- Right Side View Card -->
+          <button type="button" data-cam="right" class="cam-projection-card group bg-[#F9FAFB] hover:bg-[#E8F3FF]/60 border border-[#E5E8EB] hover:border-[#3182F6] rounded-2xl p-2 flex flex-col items-center transition">
+            <span class="text-[11px] font-extrabold text-[#3182F6] mb-1 group-hover:underline">옆(오른쪽) 모양</span>
+            <div id="proj-right" class="mini-grid w-full aspect-square max-w-[68px] bg-white p-1.5 rounded-xl border border-[#E5E8EB]"><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[3px] bg-[#F2F4F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[3px] bg-[#3182F6]"></div></div>
+            <span class="text-[10px] text-[#8B95A1] font-semibold mt-1">앞 ◀ ─ ▶ 뒤</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 3: Preset Save & Load Manager (Persists across PCs via Embedded HTML Download & JSON Export) -->
+      <div class="toss-card p-3.5 flex-1 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h2 class="text-[15px] font-extrabold text-[#191F28] flex items-center gap-1.5">
+                <span>🗂️ 프리셋 저장 · 불러오기</span>
+              </h2>
+              <p class="text-[11px] text-[#8B95A1]">슬롯에 저장 후 [파일 다운로드]하면 다른 PC에서도 켜집니다.</p>
+            </div>
+            <button type="button" data-preset="random" id="btn-random-preset" class="px-2.5 py-1.5 rounded-xl bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white active:scale-95 text-[11px] font-extrabold text-[#3182F6] transition shrink-0" title="3×3 영역에 최대 3층 높이로 랜덤 쌓기나무를 만듭니다">
+              🎲 랜덤 문제 생성
+            </button>
+          </div>
+
+          <!-- 6 Preset Slots Grid -->
+          <div id="preset-slots-container" class="grid grid-cols-2 gap-1.5 mt-2"><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#E8F3FF]/55 border-[#3182F6]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="클릭하여 이 프리셋 불러오기"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 1</div><div class="text-[10px] font-bold text-[#3182F6]">블록 9개 저장됨</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-white hover:bg-[#3182F6] hover:text-white text-[#191F28] border border-[#E5E8EB]">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="클릭하여 이 프리셋 불러오기"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 2</div><div class="text-[10px] font-bold text-[#3182F6]">블록 18개 저장됨</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-white hover:bg-[#3182F6] hover:text-white text-[#191F28] border border-[#E5E8EB]">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="클릭하여 이 프리셋 불러오기"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 3</div><div class="text-[10px] font-bold text-[#3182F6]">블록 14개 저장됨</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#3182F6]"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-white hover:bg-[#3182F6] hover:text-white text-[#191F28] border border-[#E5E8EB]">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="비어 있는 슬롯입니다. [현재 모양 저장]을 눌러 저장해 보세요"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 4</div><div class="text-[10px] font-bold text-[#8B95A1]">비어 있음</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-[#F2F4F6] text-[#B0B8C1] cursor-not-allowed" disabled="">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="비어 있는 슬롯입니다. [현재 모양 저장]을 눌러 저장해 보세요"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 5</div><div class="text-[10px] font-bold text-[#8B95A1]">비어 있음</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-[#F2F4F6] text-[#B0B8C1] cursor-not-allowed" disabled="">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div><div class="rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]"><div class="flex items-center justify-between gap-1.5 cursor-pointer" title="비어 있는 슬롯입니다. [현재 모양 저장]을 눌러 저장해 보세요"><div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-[#191F28] truncate">프리셋 6</div><div class="text-[10px] font-bold text-[#8B95A1]">비어 있음</div></div><div class="grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0"><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div><div class="w-full h-full rounded-[1.5px] bg-[#E5E8EB]/60"></div></div></div><div class="grid grid-cols-2 gap-1"><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-[#F2F4F6] text-[#B0B8C1] cursor-not-allowed" disabled="">불러오기</button><button type="button" class="py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition" title="현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다">현재저장</button></div></div></div>
+        </div>
+
+        <!-- Cross-PC Export / Import Action Bar -->
+        <div class="mt-3 pt-2.5 border-t border-[#E5E8EB] flex flex-col gap-1.5">
+          <button id="btn-save-portable-html" type="button" class="w-full py-2 px-3 rounded-xl bg-[#191F28] hover:bg-[#333D4B] active:scale-98 text-white text-xs font-extrabold transition flex items-center justify-center gap-1.5 shadow-xs">
+            <span>💻</span><span>현재 프리셋 내장 웹앱(.html) 저장 (다른 PC용)</span>
+          </button>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button id="btn-export-presets-json" type="button" class="py-1.5 px-2.5 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[11px] font-bold text-[#4E5968] transition flex items-center justify-center gap-1">
+              <span>📤</span><span>프리셋 파일 내보내기</span>
+            </button>
+            <button id="btn-import-presets-json" type="button" class="py-1.5 px-2.5 rounded-xl bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[11px] font-bold text-[#4E5968] transition flex items-center justify-center gap-1">
+              <span>📥</span><span>프리셋 파일 불러오기</span>
+            </button>
+            <input id="input-import-presets" type="file" accept=".json,application/json" class="hidden">
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Help Modal (Clean Toss Modal Style) -->
+  <div id="help-modal" class="fixed inset-0 bg-[#191F28]/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white border border-[#E5E8EB] rounded-[28px] max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-extrabold text-[#191F28] flex items-center gap-2">
+          <span>🧊</span><span>3×3 쌓기나무 실험실 사용 안내</span>
+        </h3>
+        <button id="btn-close-help" type="button" class="w-8 h-8 rounded-full bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#4E5968] font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs sm:text-sm text-[#4E5968] leading-relaxed">
+        <div class="p-3 rounded-2xl bg-[#F9FAFB]">
+          <strong class="text-[#F04452] block mb-0.5">1. 3×3 배열 &amp; 앞(정면) 기준</strong>
+          3×3 판 아래쪽의 빨간색 <strong>[▲ 앞 (정면 기준)]</strong> 표지판이 항상 앞쪽입니다. 시점을 360° 돌려도 표지판이 함께 회전하여 방향을 잃지 않습니다.
+        </div>
+        <div class="p-3 rounded-2xl bg-[#F9FAFB]">
+          <strong class="text-[#3182F6] block mb-0.5">2. 다른 PC에서도 열리는 프리셋 저장법</strong>
+          원하는 쌓기나무 모양을 만든 뒤 우측 하단 <strong>프리셋 슬롯(1~6번)의 [현재 모양 저장]</strong>을 누르고, <strong>[현재 프리셋 내장 웹앱(.html) 저장]</strong> 또는 상단 <strong>[파일 다운로드]</strong>를 누르면 다운로드된 HTML 파일 자체에 모든 프리셋이 내장되어 다른 PC에서 열어도 프리셋이 그대로 켜집니다.
+        </div>
+        <div class="p-3 rounded-2xl bg-[#F9FAFB]">
+          <strong class="text-[#191F28] block mb-0.5">3. 프리셋 파일(.json) 공유</strong>
+          <strong>프리셋 파일 내보내기 / 불러오기</strong> 버튼을 이용하면 프리셋 묶음 파일만 따로 다른 PC로 옮겨 불러올 수도 있습니다.
+        </div>
+      </div>
+      <div class="pt-1 flex justify-end">
+        <button id="btn-confirm-help" type="button" class="w-full py-3 rounded-2xl bg-[#3182F6] hover:bg-[#1B64DA] text-white font-extrabold text-sm transition">
+          확인했어요!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // --- Constants & State (3x3 Grid) ---
+      const GRID_SIZE = 3;
+      const HALF_OFFSET = 1; // For 3x3: indices 0, 1, 2 -> world coords -1, 0, +1
+      const MAX_HEIGHT = 5;
+      const RANDOM_MAX_HEIGHT = 3;
+      const DEFAULT_COLOR = '#eab308';
+      const STORAGE_KEY = 'toss_stacking_blocks_3x3_presets_v1';
+
+      let gridState = createEmptyGrid();
+      let historyStack = [];
+      let currentMode = 'add'; // 'add' | 'remove' | 'paint'
+      let selectedColor = DEFAULT_COLOR;
+      let activeLayerFilter = 'all';
+      let showNumbersOnPad = true;
+      let soundEnabled = true;
+      let autoRotate = false;
+      let isPerspective = true;
+      let activePresetSlotId = 1;
+
+      function createEmptyGrid() {
+        const arr = [];
+        for (let r = 0; r < GRID_SIZE; r++) {
+          const row = [];
+          for (let c = 0; c < GRID_SIZE; c++) {
+            row.push([]);
+          }
+          arr.push(row);
+        }
+        return arr;
+      }
+
+      function cloneGrid(g) {
+        return g.map(row => row.map(col => col.slice()));
+      }
+
+      function normalize3x3Grid(rawGrid) {
+        if (!Array.isArray(rawGrid)) return null;
+        const clean = createEmptyGrid();
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            const cell = (rawGrid[r] && rawGrid[r][c]) ? rawGrid[r][c] : [];
+            if (Array.isArray(cell)) {
+              clean[r][c] = cell.slice(0, MAX_HEIGHT).map(ch => typeof ch === 'string' ? ch : DEFAULT_COLOR);
+            } else if (typeof cell === 'number' && cell > 0) {
+              for (let k = 0; k < Math.min(MAX_HEIGHT, cell); k++) {
+                clean[r][c].push(DEFAULT_COLOR);
+              }
+            }
+          }
+        }
+        return clean;
+      }
+
+      // --- Toast Helper ---
+      let toastTimer = null;
+      function showToast(message, icon) {
+        const toastEl = document.getElementById('toss-toast');
+        const textEl = document.getElementById('toss-toast-text');
+        const iconEl = document.getElementById('toss-toast-icon');
+        if (!toastEl || !textEl) return;
+        textEl.textContent = message;
+        iconEl.textContent = icon || '✅';
+        toastEl.classList.remove('opacity-0', 'translate-y-[-8px]');
+        toastEl.classList.add('opacity-100', 'translate-y-0');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toastEl.classList.remove('opacity-100', 'translate-y-0');
+          toastEl.classList.add('opacity-0', 'translate-y-[-8px]');
+        }, 2800);
+      }
+
+      // --- Preset Storage Engine (Embedded HTML DOM + localStorage + JSON Export/Import) ---
+      let presetSlots = [];
+
+      function loadInitialPresets() {
+        let embedded = null;
+        try {
+          const el = document.getElementById('embedded-presets-data');
+          if (el && el.textContent.trim()) {
+            embedded = JSON.parse(el.textContent);
+          }
+        } catch (e) {
+          embedded = null;
+        }
+
+        let local = null;
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) local = JSON.parse(raw);
+        } catch (e) {
+          local = null;
+        }
+
+        // If the HTML file itself was downloaded with custom embedded presets, embedded data is always present.
+        // We merge local changes if present on the same browser, or use embedded presets when opened on another PC!
+        const baseList = Array.isArray(embedded) && embedded.length === 6 ? embedded : [];
+        presetSlots = [];
+        for (let i = 0; i < 6; i++) {
+          const embSlot = baseList[i] || { id: i + 1, name: `프리셋 ${i + 1}`, grid: null };
+          const locSlot = (Array.isArray(local) && local[i]) ? local[i] : null;
+          // Prefer embedded if the HTML file has custom saved data and local is empty, or prefer whichever was updated more recently
+          let chosen = embSlot;
+          if (locSlot && locSlot.updatedAt && (!embSlot.updatedAt || locSlot.updatedAt > embSlot.updatedAt)) {
+            chosen = locSlot;
+          }
+          presetSlots.push({
+            id: i + 1,
+            name: chosen.name || `프리셋 ${i + 1}`,
+            grid: chosen.grid ? normalize3x3Grid(chosen.grid) : null,
+            updatedAt: chosen.updatedAt || 0
+          });
+        }
+        syncPresetsToDOMAndStorage();
+      }
+
+      function syncPresetsToDOMAndStorage() {
+        // 1. Update the <script id="embedded-presets-data"> inside the DOM so downloading the HTML carries all presets to any PC!
+        const embedEl = document.getElementById('embedded-presets-data');
+        if (embedEl) {
+          embedEl.textContent = '\n' + JSON.stringify(presetSlots, null, 2) + '\n';
+        }
+        const curGridEl = document.getElementById('embedded-current-grid');
+        if (curGridEl) {
+          curGridEl.textContent = JSON.stringify(gridState);
+        }
+        // 2. Also save to localStorage for immediate browser persistence
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(presetSlots));
+        } catch (e) {
+          // Ignore storage errors in restricted iframes
+        }
+      }
+
+      function countBlocksInGrid(g) {
+        if (!g) return 0;
+        let sum = 0;
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            sum += (g[r] && g[r][c]) ? g[r][c].length : 0;
+          }
+        }
+        return sum;
+      }
+
+      function renderPresetSlotsUI() {
+        const containerEl = document.getElementById('preset-slots-container');
+        if (!containerEl) return;
+        containerEl.innerHTML = '';
+
+        presetSlots.forEach(function (slot, idx) {
+          const blockCount = countBlocksInGrid(slot.grid);
+          const hasData = blockCount > 0;
+          const isSelected = activePresetSlotId === slot.id;
+
+          const card = document.createElement('div');
+          card.className = 'rounded-2xl p-2.5 border transition flex flex-col justify-between gap-2 ' +
+            (isSelected
+              ? 'bg-[#E8F3FF]/55 border-[#3182F6]'
+              : 'bg-[#F9FAFB] border-[#E5E8EB] hover:border-[#D1D6DB]');
+
+          // Top row: Name + Mini 3x3 preview
+          const topRow = document.createElement('div');
+          topRow.className = 'flex items-center justify-between gap-1.5 cursor-pointer';
+          topRow.title = hasData ? '클릭하여 이 프리셋 불러오기' : '비어 있는 슬롯입니다. [현재 모양 저장]을 눌러 저장해 보세요';
+          topRow.addEventListener('click', function () {
+            if (!hasData) {
+              showToast(`프리셋 ${slot.id}이 비어 있습니다. 먼저 모양을 저장해 주세요!`, '💡');
+              return;
+            }
+            loadPresetSlot(idx);
+          });
+
+          const titleWrap = document.createElement('div');
+          titleWrap.className = 'min-w-0 flex-1';
+
+          const titleEl = document.createElement('div');
+          titleEl.className = 'text-xs font-extrabold text-[#191F28] truncate';
+          titleEl.textContent = `프리셋 ${slot.id}`;
+
+          const subEl = document.createElement('div');
+          subEl.className = 'text-[10px] font-bold ' + (hasData ? 'text-[#3182F6]' : 'text-[#8B95A1]');
+          subEl.textContent = hasData ? `블록 ${blockCount}개 저장됨` : '비어 있음';
+
+          titleWrap.appendChild(titleEl);
+          titleWrap.appendChild(subEl);
+
+          // Mini 3x3 grid icon
+          const miniPreview = document.createElement('div');
+          miniPreview.className = 'grid grid-cols-3 gap-[2px] w-8 h-8 p-1 bg-white rounded-lg border border-[#E5E8EB] shrink-0';
+          for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+              const dot = document.createElement('div');
+              const cellLen = (slot.grid && slot.grid[r] && slot.grid[r][c]) ? slot.grid[r][c].length : 0;
+              dot.className = 'w-full h-full rounded-[1.5px] ' + (cellLen > 0 ? 'bg-[#3182F6]' : 'bg-[#E5E8EB]/60');
+              miniPreview.appendChild(dot);
+            }
+          }
+
+          topRow.appendChild(titleWrap);
+          topRow.appendChild(miniPreview);
+
+          // Bottom row: [불러오기] & [저장] buttons
+          const btnRow = document.createElement('div');
+          btnRow.className = 'grid grid-cols-2 gap-1';
+
+          const btnLoad = document.createElement('button');
+          btnLoad.type = 'button';
+          btnLoad.className = 'py-1 px-1.5 rounded-lg text-[11px] font-extrabold transition ' +
+            (hasData
+              ? 'bg-white hover:bg-[#3182F6] hover:text-white text-[#191F28] border border-[#E5E8EB]'
+              : 'bg-[#F2F4F6] text-[#B0B8C1] cursor-not-allowed');
+          btnLoad.textContent = '불러오기';
+          btnLoad.disabled = !hasData;
+          btnLoad.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (hasData) loadPresetSlot(idx);
+          });
+
+          const btnSave = document.createElement('button');
+          btnSave.type = 'button';
+          btnSave.className = 'py-1 px-1.5 rounded-lg text-[11px] font-extrabold bg-[#E8F3FF] hover:bg-[#3182F6] hover:text-white text-[#3182F6] transition';
+          btnSave.textContent = '현재저장';
+          btnSave.title = '현재 3×3 판에 쌓인 모양을 이 프리셋 슬롯에 저장합니다';
+          btnSave.addEventListener('click', function (e) {
+            e.stopPropagation();
+            saveCurrentToPresetSlot(idx);
+          });
+
+          btnRow.appendChild(btnLoad);
+          btnRow.appendChild(btnSave);
+
+          card.appendChild(topRow);
+          card.appendChild(btnRow);
+          containerEl.appendChild(card);
+        });
+      }
+
+      function loadPresetSlot(idx) {
+        const slot = presetSlots[idx];
+        if (!slot || !slot.grid) return;
+        pushHistory();
+        activePresetSlotId = slot.id;
+        gridState = cloneGrid(slot.grid);
+        syncPresetsToDOMAndStorage();
+        playSound('add');
+        rebuild3DBlocks();
+        renderPresetSlotsUI();
+        showToast(`프리셋 ${slot.id} 모양을 불러왔어요!`, '📂');
+      }
+
+      function saveCurrentToPresetSlot(idx) {
+        const total = countBlocksInGrid(gridState);
+        if (total === 0) {
+          showToast('판에 최소 1개 이상의 쌓기나무를 놓은 뒤 저장해 주세요!', '⚠️');
+          return;
+        }
+        presetSlots[idx] = {
+          id: idx + 1,
+          name: `프리셋 ${idx + 1}`,
+          grid: cloneGrid(gridState),
+          updatedAt: Date.now()
+        };
+        activePresetSlotId = idx + 1;
+        syncPresetsToDOMAndStorage();
+        playSound('cam');
+        renderPresetSlotsUI();
+        showToast(`프리셋 ${idx + 1}에 저장 완료! 파일 다운로드 시 다른 PC에서도 그대로 켜집니다.`, '💾');
+      }
+
+      function pushHistory() {
+        historyStack.push(cloneGrid(gridState));
+        if (historyStack.length > 40) historyStack.shift();
+        updateUndoButton();
+      }
+
+      function updateUndoButton() {
+        const btn = document.getElementById('btn-undo');
+        if (btn) btn.disabled = historyStack.length === 0;
+      }
+
+      // --- Web Audio Synthesized Sound Effects ---
+      let audioCtx = null;
+      function playSound(type) {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          if (type === 'add') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(360, now);
+            osc.frequency.exponentialRampToValueAtTime(680, now + 0.08);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+            osc.start(now);
+            osc.stop(now + 0.085);
+          } else if (type === 'remove') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(420, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.085);
+            gain.gain.setValueAtTime(0.14, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.start(now);
+            osc.stop(now + 0.09);
+          } else if (type === 'cam') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(640, now + 0.055);
+            gain.gain.setValueAtTime(0.07, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.start(now);
+            osc.stop(now + 0.06);
+          }
+        } catch (e) {
+          // Ignore audio restrictions
+        }
+      }
+
+      // --- Three.js Scene Setup (3x3 Studio) ---
+      const container = document.getElementById('canvas-container');
+      // Remove any stale canvas if the HTML was saved after runtime
+      container.querySelectorAll('canvas').forEach(function (oldCanvas) {
+        oldCanvas.remove();
+      });
+
+      const scene = new THREE.Scene();
+
+      let aspect = Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight);
+      const perspCam = new THREE.PerspectiveCamera(38, aspect, 0.1, 200);
+      const orthoSize = 3.35;
+      const orthoCam = new THREE.OrthographicCamera(
+        -orthoSize * aspect, orthoSize * aspect,
+        orthoSize, -orthoSize,
+        0.1, 200
+      );
+      let activeCamera = perspCam;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // Bright Toss Studio Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.78);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.62);
+      dirLight.position.set(7, 14, 9);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      dirLight.shadow.bias = -0.0005;
+      scene.add(dirLight);
+
+      const fillLight = new THREE.DirectionalLight(0xe8f3ff, 0.35);
+      fillLight.position.set(-8, 8, -7);
+      scene.add(fillLight);
+
+      // Centered Camera Target & Spherical Coordinates for 3x3 Board
+      const camTarget = new THREE.Vector3(0, 0.75, 0.12);
+      const camSpherical = {
+        theta: 0.54,
+        phi: 0.96,
+        radius: 7.8,
+        targetTheta: 0.54,
+        targetPhi: 0.96,
+        targetRadius: 7.8
+      };
+
+      const boardGroup = new THREE.Group();
+      const blocksGroup = new THREE.Group();
+      scene.add(boardGroup);
+      scene.add(blocksGroup);
+
+      const pickableTiles = [];
+      let blockMeshes = [];
+
+      const TOSS_COLOR_MAP = {
+        '#eab308': '#FFC800',
+        '#ef4444': '#F04452',
+        '#3b82f6': '#3182F6',
+        '#10b981': '#00C471',
+        '#a855f7': '#8B5CF6'
+      };
+
+      function createBlockTexture(hexColor, topLabelText) {
+        const displayColor = TOSS_COLOR_MAP[hexColor] || hexColor;
+        const c = document.createElement('canvas');
+        c.width = 256;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = displayColor;
+        ctx.fillRect(0, 0, 256, 256);
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.fillRect(10, 10, 236, 26);
+
+        ctx.strokeStyle = 'rgba(25, 31, 40, 0.55)';
+        ctx.lineWidth = 9;
+        ctx.strokeRect(4.5, 4.5, 247, 247);
+
+        if (topLabelText) {
+          ctx.fillStyle = 'rgba(25, 31, 40, 0.78)';
+          ctx.beginPath();
+          ctx.arc(128, 128, 54, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '800 72px "Noto Sans KR", "Inter", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(topLabelText, 128, 132);
+        }
+
+        return new THREE.CanvasTexture(c);
+      }
+
+      const textureCache = {};
+      function getBlockMaterials(colorHex, heightNumber, isGhostLayer) {
+        const key = colorHex + '_' + (showNumbersOnPad ? heightNumber : 'no') + '_' + (isGhostLayer ? 'ghost' : 'solid');
+        if (textureCache[key]) return textureCache[key];
+
+        const sideTex = createBlockTexture(colorHex, null);
+        const topTex = createBlockTexture(colorHex, showNumbersOnPad && heightNumber ? String(heightNumber) : null);
+
+        const baseProps = {
+          roughness: 0.32,
+          metalness: 0.04,
+          transparent: isGhostLayer,
+          opacity: isGhostLayer ? 0.18 : 1.0,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        };
+
+        const sideMat = new THREE.MeshStandardMaterial(Object.assign({ map: sideTex }, baseProps));
+        const topMat = new THREE.MeshStandardMaterial(Object.assign({ map: topTex }, baseProps));
+
+        const mats = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+        textureCache[key] = mats;
+        return mats;
+      }
+
+      function createSignPlate(text, bgHex, borderHex, textColor, widthWorld, heightWorld) {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 160;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = bgHex;
+        ctx.strokeStyle = borderHex;
+        ctx.lineWidth = 10;
+        const r = 68;
+        ctx.beginPath();
+        ctx.moveTo(r, 12);
+        ctx.lineTo(500 - r, 12);
+        ctx.quadraticCurveTo(500, 12, 500, 12 + r);
+        ctx.lineTo(500, 148 - r);
+        ctx.quadraticCurveTo(500, 148, 500 - r, 148);
+        ctx.lineTo(r, 148);
+        ctx.quadraticCurveTo(12, 148, 12, 148 - r);
+        ctx.lineTo(12, 12 + r);
+        ctx.quadraticCurveTo(12, 12, r, 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = textColor;
+        ctx.font = '800 62px "Noto Sans KR", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 256, 82);
+
+        const tex = new THREE.CanvasTexture(c);
+        const geo = new THREE.PlaneGeometry(widthWorld, heightWorld);
+        const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+        return new THREE.Mesh(geo, mat);
+      }
+
+      // Build Clean Light Studio 3x3 Base Board with Distinct Floor Grid Dividers (바닥 구분판)
+      function buildBaseBoard() {
+        // Dark Slate Pedestal Base (Top surface at y = -0.02 so tiles at y = 0.01 never z-fight!)
+        const baseGeo = new THREE.BoxGeometry(3.48, 0.24, 3.48);
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x333D4B, roughness: 0.6 });
+        const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+        baseMesh.position.set(0, -0.14, 0);
+        baseMesh.receiveShadow = true;
+        boardGroup.add(baseMesh);
+
+        // Raised 3x3 Grid Divider Frame on the Floor
+        const gridHelper = new THREE.GridHelper(3.0, 3, 0x191F28, 0x333D4B);
+        gridHelper.position.set(0, 0.012, 0);
+        boardGroup.add(gridHelper);
+
+        // Toss Coral Red Front Accent Bar (+Z side of 3x3 board)
+        const frontBarGeo = new THREE.BoxGeometry(3.50, 0.26, 0.16);
+        const frontBarMat = new THREE.MeshStandardMaterial({
+          color: 0xF04452,
+          roughness: 0.3
+        });
+        const frontBar = new THREE.Mesh(frontBarGeo, frontBarMat);
+        frontBar.position.set(0, -0.13, 1.76);
+        boardGroup.add(frontBar);
+
+        // 3x3 Distinct Raised Floor Tiles (바닥 구분판)
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            const tileCanvas = document.createElement('canvas');
+            tileCanvas.width = 256;
+            tileCanvas.height = 256;
+            const tctx = tileCanvas.getContext('2d');
+            const isEven = (r + c) % 2 === 0;
+            tctx.fillStyle = isEven ? '#FFFFFF' : '#E8F3FF';
+            tctx.fillRect(0, 0, 256, 256);
+
+            // Crisp dark outer divider border + inner accent border
+            tctx.strokeStyle = '#333D4B';
+            tctx.lineWidth = 14;
+            tctx.strokeRect(7, 7, 242, 242);
+
+            tctx.strokeStyle = '#90C2FF';
+            tctx.lineWidth = 4;
+            tctx.strokeRect(20, 20, 216, 216);
+
+            // Subtle center cross/dot so empty cells are clearly recognizable
+            tctx.fillStyle = '#B0B8C1';
+            tctx.beginPath();
+            tctx.arc(128, 128, 8, 0, Math.PI * 2);
+            tctx.fill();
+
+            const tileTex = new THREE.CanvasTexture(tileCanvas);
+            const tileGeo = new THREE.BoxGeometry(0.94, 0.025, 0.94);
+            const tileMat = new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.65 });
+            const tileMesh = new THREE.Mesh(tileGeo, tileMat);
+            tileMesh.position.set(c - HALF_OFFSET, 0.0, r - HALF_OFFSET);
+            tileMesh.receiveShadow = true;
+            tileMesh.userData = { isTile: true, row: r, col: c };
+            boardGroup.add(tileMesh);
+            pickableTiles.push(tileMesh);
+          }
+        }
+
+        // 3D Direction Pill Plates around the 3x3 Board
+        const frontPlate = createSignPlate('▲ 앞 (정면 기준)', '#F04452', '#FFFFFF', '#FFFFFF', 2.35, 0.72);
+        frontPlate.rotation.x = -Math.PI / 2;
+        frontPlate.position.set(0, 0.02, 2.32);
+        boardGroup.add(frontPlate);
+
+        const backPlate = createSignPlate('▼ 뒤 (BACK)', '#FFFFFF', '#D1D6DB', '#4E5968', 1.75, 0.54);
+        backPlate.rotation.x = -Math.PI / 2;
+        backPlate.position.set(0, 0.02, -2.22);
+        boardGroup.add(backPlate);
+
+        const rightPlate = createSignPlate('오른쪽 옆', '#E8F3FF', '#3182F6', '#1B64DA', 1.75, 0.54);
+        rightPlate.rotation.x = -Math.PI / 2;
+        rightPlate.rotation.z = Math.PI / 2;
+        rightPlate.position.set(2.22, 0.02, 0);
+        boardGroup.add(rightPlate);
+
+        const leftPlate = createSignPlate('왼쪽 옆', '#FFFFFF', '#D1D6DB', '#4E5968', 1.75, 0.54);
+        leftPlate.rotation.x = -Math.PI / 2;
+        leftPlate.rotation.z = -Math.PI / 2;
+        leftPlate.position.set(-2.22, 0.02, 0);
+        boardGroup.add(leftPlate);
+      }
+
+      buildBaseBoard();
+
+      // Ghost Hover Preview Cube
+      const hoverGeo = new THREE.BoxGeometry(1.01, 1.01, 1.01);
+      const hoverMat = new THREE.MeshBasicMaterial({
+        color: 0x3182F6,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.85
+      });
+      const hoverMesh = new THREE.Mesh(hoverGeo, hoverMat);
+      hoverMesh.visible = false;
+      scene.add(hoverMesh);
+
+      const blockGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+      const blockEdgesGeo = new THREE.EdgesGeometry(blockGeo);
+      const solidEdgeMat = new THREE.LineBasicMaterial({ color: 0x191F28, transparent: true, opacity: 0.72 });
+      const ghostEdgeMat = new THREE.LineBasicMaterial({ color: 0x3182F6, transparent: true, opacity: 0.25 });
+      function rebuild3DBlocks() {
+        while (blocksGroup.children.length > 0) {
+          blocksGroup.remove(blocksGroup.children[0]);
+        }
+        blockMeshes = [];
+
+        let totalBlocks = 0;
+        let maxH = 0;
+
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            const stack = gridState[r][c];
+            const h = stack.length;
+            totalBlocks += h;
+            if (h > maxH) maxH = h;
+
+            for (let level = 0; level < h; level++) {
+              const floorNum = level + 1;
+              const colorHex = stack[level];
+              const isTopBlock = level === h - 1;
+              const isGhost = activeLayerFilter !== 'all' && Number(activeLayerFilter) !== floorNum;
+
+              const mats = getBlockMaterials(colorHex, isTopBlock ? h : null, isGhost);
+              const mesh = new THREE.Mesh(blockGeo, mats);
+              mesh.position.set(c - HALF_OFFSET, level + 0.515, r - HALF_OFFSET);
+              mesh.castShadow = !isGhost;
+              mesh.receiveShadow = true;
+              mesh.userData = {
+                isBlock: true,
+                row: r,
+                col: c,
+                level: level
+              };
+              const edgeLines = new THREE.LineSegments(blockEdgesGeo, isGhost ? ghostEdgeMat : solidEdgeMat);
+              mesh.add(edgeLines);
+              blocksGroup.add(mesh);
+              blockMeshes.push(mesh);
+            }
+          }
+        }
+
+        document.getElementById('total-count-badge').textContent = totalBlocks + '개';
+        document.getElementById('max-height-badge').textContent = maxH + '층';
+
+        syncPresetsToDOMAndStorage();
+        update2DPadAndProjections(maxH);
+      }
+
+      // --- Update 3x3 2D Pad & 3 Orthographic Mini Projections ---
+      function update2DPadAndProjections(currentMaxH) {
+        const padEl = document.getElementById('grid-5x5-pad');
+        padEl.innerHTML = '';
+
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            const count = gridState[r][c].length;
+            const rawColor = count > 0 ? gridState[r][c][count - 1] : null;
+            const displayColor = rawColor ? (TOSS_COLOR_MAP[rawColor] || rawColor) : null;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'grid-cell-btn w-full h-full rounded-xl font-extrabold text-base flex items-center justify-center transition ';
+
+            if (count > 0) {
+              btn.style.backgroundColor = displayColor;
+              btn.style.color = rawColor === '#eab308' ? '#191F28' : '#FFFFFF';
+              btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.12)';
+              btn.textContent = showNumbersOnPad ? String(count) : '■';
+            } else {
+              btn.className += 'bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#8B95A1]';
+              btn.textContent = showNumbersOnPad ? '0' : '·';
+            }
+
+            btn.title = `${r + 1}행 ${c + 1}열 (${count}층) - 클릭: 조작 / 우클릭: 빼기`;
+            btn.addEventListener('click', function () {
+              handleCellAction(r, c);
+            });
+            btn.addEventListener('contextmenu', function (e) {
+              e.preventDefault();
+              removeBlockAt(r, c);
+            });
+            padEl.appendChild(btn);
+          }
+        }
+
+        const displayRows = Math.max(3, currentMaxH || 3);
+
+        // 1. Top View Mini Grid (3x3)
+        const topEl = document.getElementById('proj-top');
+        topEl.innerHTML = '';
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            const cell = document.createElement('div');
+            const active = gridState[r][c].length > 0;
+            cell.className = 'w-full h-full rounded-[3px] ' + (active ? 'bg-[#00C471]' : 'bg-[#F2F4F6]');
+            topEl.appendChild(cell);
+          }
+        }
+
+        // 2. Front View Mini Grid (3 cols x displayRows levels)
+        const frontEl = document.getElementById('proj-front');
+        frontEl.innerHTML = '';
+        for (let lv = displayRows - 1; lv >= 0; lv--) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            let maxColH = 0;
+            for (let r = 0; r < GRID_SIZE; r++) {
+              if (gridState[r][c].length > maxColH) maxColH = gridState[r][c].length;
+            }
+            const cell = document.createElement('div');
+            const active = maxColH > lv;
+            cell.className = 'w-full h-full rounded-[3px] ' + (active ? 'bg-[#F04452]' : 'bg-[#F2F4F6]');
+            frontEl.appendChild(cell);
+          }
+        }
+
+        // 3. Right Side View Mini Grid (3 depth cols x displayRows levels)
+        // Left side of right-view is Front (row 2), Right side is Back (row 0)
+        const rightEl = document.getElementById('proj-right');
+        rightEl.innerHTML = '';
+        for (let lv = displayRows - 1; lv >= 0; lv--) {
+          for (let d = 0; d < GRID_SIZE; d++) {
+            const r = (GRID_SIZE - 1) - d;
+            let maxRowH = 0;
+            for (let c = 0; c < GRID_SIZE; c++) {
+              if (gridState[r][c].length > maxRowH) maxRowH = gridState[r][c].length;
+            }
+            const cell = document.createElement('div');
+            const active = maxRowH > lv;
+            cell.className = 'w-full h-full rounded-[3px] ' + (active ? 'bg-[#3182F6]' : 'bg-[#F2F4F6]');
+            rightEl.appendChild(cell);
+          }
+        }
+      }
+
+      // --- Block Manipulation Actions ---
+      function addBlockAt(r, c) {
+        if (gridState[r][c].length >= MAX_HEIGHT) return;
+        pushHistory();
+        gridState[r][c].push(selectedColor);
+        playSound('add');
+        rebuild3DBlocks();
+      }
+
+      function removeBlockAt(r, c) {
+        if (gridState[r][c].length === 0) return;
+        pushHistory();
+        gridState[r][c].pop();
+        playSound('remove');
+        rebuild3DBlocks();
+      }
+
+      function paintBlockAt(r, c, level) {
+        if (gridState[r][c].length === 0) return;
+        const targetIdx = (typeof level === 'number' && level < gridState[r][c].length)
+          ? level
+          : gridState[r][c].length - 1;
+        pushHistory();
+        gridState[r][c][targetIdx] = selectedColor;
+        playSound('add');
+        rebuild3DBlocks();
+      }
+
+      function handleCellAction(r, c, level) {
+        if (currentMode === 'add') {
+          if (gridState[r][c].length >= MAX_HEIGHT) {
+            removeBlockAt(r, c);
+          } else {
+            addBlockAt(r, c);
+          }
+        } else if (currentMode === 'remove') {
+          removeBlockAt(r, c);
+        } else if (currentMode === 'paint') {
+          paintBlockAt(r, c, level);
+        }
+      }
+
+      // --- Pointer Interaction ---
+      const raycaster = new THREE.Raycaster();
+      const pointerNDC = new THREE.Vector2();
+      let isDragging = false;
+      let pointerDownPos = { x: 0, y: 0 };
+      let prevPointerPos = { x: 0, y: 0 };
+      let pointerMovedDistance = 0;
+
+      function updatePointerNDC(clientX, clientY) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointerNDC.x = ((clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+        pointerNDC.y = -((clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1;
+      }
+
+      function updateHoverPreview(clientX, clientY) {
+        updatePointerNDC(clientX, clientY);
+        raycaster.setFromCamera(pointerNDC, activeCamera);
+        const intersects = raycaster.intersectObjects(blockMeshes.concat(pickableTiles), false);
+        if (intersects.length > 0) {
+          const hit = intersects[0].object.userData;
+          const r = hit.row;
+          const c = hit.col;
+          const curH = gridState[r][c].length;
+          if (currentMode === 'add' && curH < MAX_HEIGHT) {
+            hoverMesh.position.set(c - HALF_OFFSET, curH + 0.515, r - HALF_OFFSET);
+            hoverMesh.material.color.setHex(0x3182F6);
+            hoverMesh.visible = true;
+          } else if ((currentMode === 'remove' || currentMode === 'paint') && curH > 0) {
+            const lv = typeof hit.level === 'number' ? hit.level : curH - 1;
+            hoverMesh.position.set(c - HALF_OFFSET, lv + 0.515, r - HALF_OFFSET);
+            hoverMesh.material.color.setHex(currentMode === 'remove' ? 0xF04452 : 0xFFC800);
+            hoverMesh.visible = true;
+          } else {
+            hoverMesh.visible = false;
+          }
+        } else {
+          hoverMesh.visible = false;
+        }
+      }
+
+      renderer.domElement.addEventListener('pointerdown', function (e) {
+        isDragging = true;
+        pointerMovedDistance = 0;
+        pointerDownPos = { x: e.clientX, y: e.clientY };
+        prevPointerPos = { x: e.clientX, y: e.clientY };
+        autoRotate = false;
+        updateAutoRotateUI();
+      });
+
+      window.addEventListener('pointermove', function (e) {
+        if (!isDragging) {
+          if (e.target === renderer.domElement) {
+            updateHoverPreview(e.clientX, e.clientY);
+          } else {
+            hoverMesh.visible = false;
+          }
+          return;
+        }
+
+        const dx = e.clientX - prevPointerPos.x;
+        const dy = e.clientY - prevPointerPos.y;
+        pointerMovedDistance += Math.hypot(dx, dy);
+        prevPointerPos = { x: e.clientX, y: e.clientY };
+
+        if (pointerMovedDistance > 4) {
+          hoverMesh.visible = false;
+          camSpherical.targetTheta -= dx * 0.0085;
+          camSpherical.targetPhi = Math.max(0.06, Math.min(Math.PI / 2 - 0.02, camSpherical.targetPhi - dy * 0.0075));
+          clearActiveCamPresetHighlight('자유 입체 회전 시점');
+        }
+      });
+
+      window.addEventListener('pointerup', function (e) {
+        if (!isDragging) return;
+        isDragging = false;
+
+        if (pointerMovedDistance <= 6 && e.target === renderer.domElement) {
+          updatePointerNDC(pointerDownPos.x, pointerDownPos.y);
+          raycaster.setFromCamera(pointerNDC, activeCamera);
+          const intersects = raycaster.intersectObjects(blockMeshes.concat(pickableTiles), false);
+          if (intersects.length > 0) {
+            const hit = intersects[0].object.userData;
+            if (e.button === 2) {
+              removeBlockAt(hit.row, hit.col);
+            } else {
+              handleCellAction(hit.row, hit.col, hit.level);
+            }
+            updateHoverPreview(e.clientX, e.clientY);
+          }
+        }
+      });
+
+      renderer.domElement.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+      });
+
+      renderer.domElement.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        camSpherical.targetRadius = Math.max(4.6, Math.min(14.5, camSpherical.targetRadius + e.deltaY * 0.005));
+      }, { passive: false });
+
+      window.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          document.getElementById('btn-undo').click();
+        }
+      });
+
+      // --- Camera Viewpoint Presets ---
+      const CAMERA_PRESETS = {
+        iso:   { theta: 0.54,          phi: 0.96,            label: '입체 기본 시점 (앞·위·오른쪽)' },
+        front: { theta: 0,             phi: Math.PI / 2 - 0.03, label: '▲ 앞(정면)에서 본 시점' },
+        top:   { theta: 0,             phi: 0.02,            label: '⬇ 위에서 내려다본 시점 (아래쪽이 앞)' },
+        right: { theta: Math.PI / 2,   phi: Math.PI / 2 - 0.03, label: '◀ 오른쪽 옆에서 본 시점' },
+        left:  { theta: -Math.PI / 2,  phi: Math.PI / 2 - 0.03, label: '▶ 왼쪽 옆에서 본 시점' },
+        back:  { theta: Math.PI,       phi: Math.PI / 2 - 0.03, label: '▼ 뒤에서 본 시점' }
+      };
+
+      function clearActiveCamPresetHighlight(customLabel) {
+        document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+        if (customLabel) {
+          document.getElementById('current-view-label').textContent = '현재 시점: ' + customLabel;
+        }
+      }
+
+      function setCameraPreset(presetKey) {
+        const p = CAMERA_PRESETS[presetKey];
+        if (!p) return;
+        autoRotate = false;
+        updateAutoRotateUI();
+
+        let diff = (p.theta - camSpherical.theta) % (Math.PI * 2);
+        if (diff > Math.PI) diff -= Math.PI * 2;
+        if (diff < -Math.PI) diff += Math.PI * 2;
+
+        camSpherical.targetTheta = camSpherical.theta + diff;
+        camSpherical.targetPhi = p.phi;
+
+        document.querySelectorAll('.cam-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-cam') === presetKey);
+        });
+        document.getElementById('current-view-label').textContent = '현재 시점: ' + p.label;
+        playSound('cam');
+      }
+
+      document.querySelectorAll('[data-cam]').forEach(btn => {
+        btn.addEventListener('click', function () {
+          setCameraPreset(this.getAttribute('data-cam'));
+        });
+      });
+
+      document.querySelectorAll('[data-orbit]').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const dir = this.getAttribute('data-orbit');
+          autoRotate = false;
+          updateAutoRotateUI();
+          if (dir === 'left') camSpherical.targetTheta -= 0.35;
+          if (dir === 'right') camSpherical.targetTheta += 0.35;
+          if (dir === 'up') camSpherical.targetPhi = Math.max(0.05, camSpherical.targetPhi - 0.25);
+          if (dir === 'down') camSpherical.targetPhi = Math.min(Math.PI / 2 - 0.02, camSpherical.targetPhi + 0.25);
+          clearActiveCamPresetHighlight('리모컨 회전 시점');
+          playSound('cam');
+        });
+      });
+
+      document.getElementById('btn-reset-cam').addEventListener('click', function () {
+        setCameraPreset('iso');
+      });
+
+      document.getElementById('btn-zoom-in').addEventListener('click', function () {
+        camSpherical.targetRadius = Math.max(4.6, camSpherical.targetRadius - 0.9);
+      });
+      document.getElementById('btn-zoom-out').addEventListener('click', function () {
+        camSpherical.targetRadius = Math.min(14.5, camSpherical.targetRadius + 0.9);
+      });
+
+      // --- Perspective vs Orthographic Toggle ---
+      const btnProjMode = document.getElementById('btn-proj-mode');
+      btnProjMode.addEventListener('click', function () {
+        isPerspective = !isPerspective;
+        activeCamera = isPerspective ? perspCam : orthoCam;
+        btnProjMode.textContent = isPerspective ? '🥽 VR 입체원근: 켜짐' : '📐 교과서 평면투영: 켜짐';
+        playSound('cam');
+      });
+
+      // --- Auto Rotate Toggle ---
+      const btnAutoRotate = document.getElementById('btn-autorotate');
+      function updateAutoRotateUI() {
+        if (autoRotate) {
+          btnAutoRotate.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-[#3182F6] text-white transition';
+        } else {
+          btnAutoRotate.className = 'px-3 py-1.5 rounded-xl text-xs font-bold text-[#4E5968] hover:bg-[#F2F4F6] transition';
+        }
+      }
+      btnAutoRotate.addEventListener('click', function () {
+        autoRotate = !autoRotate;
+        updateAutoRotateUI();
+      });
+
+      // --- Tool Mode & Color Swatches ---
+      document.querySelectorAll('.tool-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          currentMode = this.getAttribute('data-mode');
+          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+
+      document.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', function () {
+          selectedColor = this.getAttribute('data-color');
+          document.querySelectorAll('.color-swatch').forEach(s => {
+            s.classList.remove('ring-2', 'ring-offset-2', 'ring-[#191F28]', 'scale-110');
+            s.classList.add('opacity-75');
+          });
+          this.classList.remove('opacity-75');
+          this.classList.add('ring-2', 'ring-offset-2', 'ring-[#191F28]', 'scale-110');
+        });
+      });
+
+      // --- Layer X-Ray Filter ---
+      document.getElementById('layer-filter-select').addEventListener('change', function () {
+        activeLayerFilter = this.value;
+        rebuild3DBlocks();
+      });
+
+      // --- Show/Hide Numbers Toggle ---
+      const btnHideNumbers = document.getElementById('btn-hide-numbers');
+      btnHideNumbers.addEventListener('click', function () {
+        showNumbersOnPad = !showNumbersOnPad;
+        btnHideNumbers.textContent = showNumbersOnPad ? '👁️ 숫자 보이기' : '🙈 숫자 숨김(퀴즈)';
+        rebuild3DBlocks();
+      });
+
+      // --- Undo / Clear / Sound ---
+      document.getElementById('btn-undo').addEventListener('click', function () {
+        if (historyStack.length === 0) return;
+        gridState = historyStack.pop();
+        updateUndoButton();
+        playSound('remove');
+        rebuild3DBlocks();
+      });
+
+      document.getElementById('btn-clear').addEventListener('click', function () {
+        pushHistory();
+        gridState = createEmptyGrid();
+        playSound('remove');
+        rebuild3DBlocks();
+      });
+
+      const btnSound = document.getElementById('btn-sound-toggle');
+      btnSound.addEventListener('click', function () {
+        soundEnabled = !soundEnabled;
+        btnSound.textContent = soundEnabled ? '🔊 효과음' : '🔇 음소거';
+      });
+
+      // --- Portable Self-Contained HTML Download (Embeds all saved presets for other PCs!) ---
+      function downloadPortableHtmlFile() {
+        syncPresetsToDOMAndStorage();
+        const docClone = document.documentElement.cloneNode(true);
+        // Clean runtime-generated DOM elements in the clone so it starts fresh and clean on another PC
+        const cloneCanvasContainer = docClone.querySelector('#canvas-container');
+        if (cloneCanvasContainer) {
+          cloneCanvasContainer.querySelectorAll('canvas').forEach(function (c) { c.remove(); });
+        }
+        const htmlSource = '<!DOCTYPE html>\n' + docClone.outerHTML;
+        const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stacking_blocks_3d_presets.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        showToast('현재 프리셋이 모두 내장된 HTML 파일을 저장했습니다! 다른 PC에서 열면 프리셋이 그대로 켜집니다.', '💻');
+      }
+
+      document.getElementById('btn-download-html').addEventListener('click', downloadPortableHtmlFile);
+      document.getElementById('btn-save-portable-html').addEventListener('click', downloadPortableHtmlFile);
+
+      // --- Export / Import Presets JSON File ---
+      document.getElementById('btn-export-presets-json').addEventListener('click', function () {
+        syncPresetsToDOMAndStorage();
+        const payload = {
+          version: 1,
+          gridSize: 3,
+          exportedAt: new Date().toISOString(),
+          presets: presetSlots,
+          currentGrid: gridState
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stacking_blocks_3x3_presets.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        showToast('프리셋 묶음(.json) 파일을 내보냈습니다.', '📤');
+      });
+
+      const inputImport = document.getElementById('input-import-presets');
+      document.getElementById('btn-import-presets-json').addEventListener('click', function () {
+        inputImport.value = '';
+        inputImport.click();
+      });
+
+      inputImport.addEventListener('change', function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            const incomingList = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.presets) ? parsed.presets : null);
+            if (!incomingList) {
+              showToast('올바른 프리셋 파일 형식이 아닙니다.', '⚠️');
+              return;
+            }
+            for (let i = 0; i < 6; i++) {
+              const item = incomingList[i];
+              presetSlots[i] = {
+                id: i + 1,
+                name: (item && item.name) ? item.name : `프리셋 ${i + 1}`,
+                grid: (item && item.grid) ? normalize3x3Grid(item.grid) : null,
+                updatedAt: Date.now()
+              };
+            }
+            if (parsed && parsed.currentGrid) {
+              const normCur = normalize3x3Grid(parsed.currentGrid);
+              if (normCur) gridState = normCur;
+            } else if (presetSlots[0] && presetSlots[0].grid) {
+              gridState = cloneGrid(presetSlots[0].grid);
+            }
+            syncPresetsToDOMAndStorage();
+            rebuild3DBlocks();
+            renderPresetSlotsUI();
+            playSound('add');
+            showToast('프리셋 파일을 성공적으로 불러왔습니다!', '📥');
+          } catch (err) {
+            showToast('파일을 읽는 중 오류가 발생했습니다.', '⚠️');
+          }
+        };
+        reader.readAsText(file, 'utf-8');
+      });
+
+      // --- Help Modal ---
+      const helpModal = document.getElementById('help-modal');
+      function closeHelp() {
+        helpModal.classList.add('hidden');
+        helpModal.classList.remove('flex');
+      }
+      document.getElementById('btn-help-modal').addEventListener('click', function () {
+        helpModal.classList.remove('hidden');
+        helpModal.classList.add('flex');
+      });
+      document.getElementById('btn-close-help').addEventListener('click', closeHelp);
+      document.getElementById('btn-confirm-help').addEventListener('click', closeHelp);
+
+      // --- Random Problem Generator (3x3, Max 3 Floors) ---
+      document.getElementById('btn-random-preset').addEventListener('click', function () {
+        pushHistory();
+        const nextGrid = createEmptyGrid();
+        let placedCols = 0;
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            if (Math.random() > 0.32) {
+              const h = Math.floor(Math.random() * RANDOM_MAX_HEIGHT) + 1; // 1, 2, or 3
+              for (let lv = 0; lv < h; lv++) {
+                nextGrid[r][c].push(selectedColor || DEFAULT_COLOR);
+              }
+              placedCols++;
+            }
+          }
+        }
+        if (placedCols < 4) {
+          nextGrid[1][1] = [selectedColor, selectedColor, selectedColor];
+          nextGrid[1][0] = [selectedColor, selectedColor];
+          nextGrid[2][1] = [selectedColor];
+          nextGrid[0][1] = [selectedColor, selectedColor];
+        }
+        gridState = nextGrid;
+        playSound('add');
+        rebuild3DBlocks();
+        showToast('3×3 랜덤 문제(최대 3층)를 생성했습니다!', '🎲');
+      });
+
+      // --- Exact Viewport Resize Handling ---
+      function handleResize() {
+        const rect = container.getBoundingClientRect();
+        const w = Math.max(300, rect.width || container.clientWidth);
+        const h = Math.max(320, rect.height || container.clientHeight);
+        aspect = w / h;
+
+        perspCam.aspect = aspect;
+        perspCam.updateProjectionMatrix();
+
+        orthoCam.left = -orthoSize * aspect;
+        orthoCam.right = orthoSize * aspect;
+        orthoCam.top = orthoSize;
+        orthoCam.bottom = -orthoSize;
+        orthoCam.updateProjectionMatrix();
+
+        renderer.setSize(w, h, false);
+      }
+
+      window.addEventListener('resize', handleResize);
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(function () {
+          handleResize();
+        });
+        ro.observe(container);
+      }
+
+      // --- Main Animation Loop ---
+      function animate() {
+        requestAnimationFrame(animate);
+
+        if (autoRotate) {
+          camSpherical.targetTheta += 0.006;
+        }
+
+        camSpherical.theta += (camSpherical.targetTheta - camSpherical.theta) * 0.14;
+        camSpherical.phi += (camSpherical.targetPhi - camSpherical.phi) * 0.14;
+        camSpherical.radius += (camSpherical.targetRadius - camSpherical.radius) * 0.14;
+
+        const sinPhi = Math.sin(camSpherical.phi);
+        const cx = camTarget.x + camSpherical.radius * sinPhi * Math.sin(camSpherical.theta);
+        const cy = camTarget.y + camSpherical.radius * Math.cos(camSpherical.phi);
+        const cz = camTarget.z + camSpherical.radius * sinPhi * Math.cos(camSpherical.theta);
+
+        perspCam.position.set(cx, cy, cz);
+        perspCam.lookAt(camTarget);
+
+        orthoCam.position.set(cx, cy, cz);
+        orthoCam.zoom = 7.8 / camSpherical.radius;
+        orthoCam.updateProjectionMatrix();
+        orthoCam.lookAt(camTarget);
+
+        renderer.render(scene, activeCamera);
+      }
+
+      window.addEventListener('load', function () {
+        handleResize();
+        loadInitialPresets();
+
+        // Restore embedded active grid if saved, otherwise load Preset 1
+        let restoredGrid = null;
+        try {
+          const curEl = document.getElementById('embedded-current-grid');
+          if (curEl && curEl.textContent.trim() && curEl.textContent.trim() !== 'null') {
+            restoredGrid = normalize3x3Grid(JSON.parse(curEl.textContent));
+          }
+        } catch (e) {
+          restoredGrid = null;
+        }
+
+        if (restoredGrid && countBlocksInGrid(restoredGrid) > 0) {
+          gridState = restoredGrid;
+        } else if (presetSlots[0] && presetSlots[0].grid) {
+          gridState = cloneGrid(presetSlots[0].grid);
+        }
+
+        rebuild3DBlocks();
+        renderPresetSlotsUI();
+        historyStack = [];
+        updateUndoButton();
+        animate();
+      });
+    })();
+  </script>
+
+</body></html>
